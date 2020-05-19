@@ -54,7 +54,9 @@ def create_section_weights(metric, columns):
             metrics_data[metric]['sub_weights'][col] = st.sidebar.slider(
                 col,
                 value=metrics_data[metric]['sub_weights'][col] if col in metrics_data[metric]['sub_weights'] else default_value,
-                key='{0}_{1}'.format(metric,col)
+                key='{0}_{1}'.format(metric,col),
+                min_value=-1.0,
+                max_value=1.0
             )
         elif col in metrics_data[metric]['sub_weights']:
             continue
@@ -67,7 +69,7 @@ for metric in metrics:
     columns = metric_data['columns']
 
     st.sidebar.subheader(metric)
-    weight = st.sidebar.slider('Weight', value=1/len(metrics), key=metric)
+    weight = st.sidebar.slider('Weight', value=1/len(metrics), key=metric, min_value=-1.0, max_value=1.0)
 
     metric_score = metric_data['data'][['State']].copy()
 
@@ -78,9 +80,11 @@ for metric in metrics:
     if len(metric_data['sub_weights'].keys()) > 0:
         metric_score[metric] = 0
         for col in metrics_data[metric]['sub_weights']:
-            metric_score[metric] = metric_score[metric] + metric_data['data'][col] * metric_data['sub_weights'][col]
+            percent_metric = metric_data['data'][col]/metric_data['data'][col].max()
+            applied_weights = percent_metric * metric_data['sub_weights'][col]
+            metric_score[metric] = metric_score[metric] + applied_weights
     else:
-        metric_score[metric] = metric_data['data'].iloc[:,1]
+        metric_score[metric] = metric_data['data'].iloc[:,1]/metric_data['data'].iloc[:,1].max()
 
     if ranking_df is False:
         ranking_df = metric_score
@@ -92,8 +96,9 @@ for metric in metrics:
     # end cleanup
 
 st.title('Rankings')
+st.write('See which states are favorable based on what\'s important to you. The lower the score, the more favorable the state. Favorable attributes with a high value require a negative weight (i.e. warm weather). ')
 
-ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
+ranking_df = ranking_df.sort_values(by=['Score'])
 st.write(ranking_df)
 
 for metric in metrics:
