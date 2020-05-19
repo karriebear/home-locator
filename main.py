@@ -55,7 +55,7 @@ def create_section_weights(metric, columns):
                 col,
                 value=metrics_data[metric]['sub_weights'][col] if col in metrics_data[metric]['sub_weights'] else default_value,
                 key='{0}_{1}'.format(metric,col),
-                min_value=-1.0,
+                min_value=0.0,
                 max_value=1.0
             )
         elif col in metrics_data[metric]['sub_weights']:
