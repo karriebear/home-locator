@@ -2,10 +2,13 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 
+# (metric_name, is_lower_favorable)
 metrics = [
-    'Safety',
+    ('Safety', False),
     'Natural Disasters',
-    'Weather',
+    # ('Natural Disasters', False),
+    # ('Natural Disasters', True),
+    ('Weather', False),
     'Income Tax',
     # 'Capital Gains Tax',
     'Sin Tax',
@@ -45,8 +48,12 @@ def load_data(file, sheet):
     }
     return metric_data
 
-def create_section_weights(metric, columns):
-    show_category_weighting = st.sidebar.checkbox('Show category weighting', key=metric)
+def create_section_weights(metric, columns, is_favorable=True):
+    st.sidebar.checkbox('Is Favorable', value=not is_favorable, key='{0}_is_favorable'.format(metric))
+
+    show_category_weighting = False
+    if len(columns) > 1:
+        show_category_weighting = st.sidebar.checkbox('Show category weighting', key=metric)
     default_value = 1/len(columns)
 
     for col in columns:
@@ -63,28 +70,39 @@ def create_section_weights(metric, columns):
         else:
             metrics_data[metric]['sub_weights'][col] = default_value
 
-for metric in metrics:
+for index, metric_config in enumerate(metrics):
+    if not isinstance(metric_config, tuple):
+        metrics[index] = (metric_config, True)
+        print(metrics)
+    (metric, is_lower_favorable) = metrics[index]
+
     metric_data = load_data('1ZBhUjnMxAQW1fgQAEipzJ7jbaJ5768bGSkqyuOgHn2o', metric)
     metrics_data[metric] = metric_data
     columns = metric_data['columns']
 
     st.sidebar.subheader(metric)
-    weight = st.sidebar.slider('Weight', value=1/len(metrics), key=metric, min_value=-1.0, max_value=1.0)
+    weight = st.sidebar.slider(
+        'Weight',
+        value=1/len(metrics),
+        key=metric,
+        min_value=0.0,
+        max_value=1.0
+    )
 
     metric_score = metric_data['data'][['State']].copy()
 
-    if len(columns) > 1:
-        create_section_weights(metric, columns)
+    create_section_weights(metric, columns, is_lower_favorable)
 
+    # this math doesn't work out properly :( true + false should equal to one but does not
     # cleanup/move to method -> calculate scores
-    if len(metric_data['sub_weights'].keys()) > 0:
-        metric_score[metric] = 0
-        for col in metrics_data[metric]['sub_weights']:
-            percent_metric = metric_data['data'][col]/metric_data['data'][col].max()
-            applied_weights = percent_metric * metric_data['sub_weights'][col]
-            metric_score[metric] = metric_score[metric] + applied_weights
-    else:
-        metric_score[metric] = metric_data['data'].iloc[:,1]/metric_data['data'].iloc[:,1].max()
+    metric_score[metric] = 1 if is_lower_favorable else 0
+    for col in metrics_data[metric]['sub_weights']:
+        percent_metric = metric_data['data'][col]/metric_data['data'][col].max()
+        applied_weights = percent_metric * metric_data['sub_weights'][col]
+        if is_lower_favorable:
+            metric_score[metric] -= applied_weights
+        else:
+            metric_score[metric] += applied_weights
 
     if ranking_df is False:
         ranking_df = metric_score
@@ -96,11 +114,11 @@ for metric in metrics:
     # end cleanup
 
 st.title('Rankings')
-st.write('See which states are favorable based on what\'s important to you. The lower the score, the more favorable the state. Favorable attributes with a high value require a negative weight (i.e. warm weather). ')
+st.write('See which states are favorable based on what\'s important to you.')
 
-ranking_df = ranking_df.sort_values(by=['Score'])
+ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
 st.write(ranking_df)
 
-for metric in metrics:
-    st.subheader(metric)
-    st.write(metrics_data[metric].get('data'))
+for metric_name, is_lower_favorable in metrics:
+    st.subheader(metric_name)
+    st.write(metrics_data[metric_name].get('data'))
