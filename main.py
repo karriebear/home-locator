@@ -113,12 +113,17 @@ for index, metric_config in enumerate(metrics):
     ranking_df['Score'] = ranking_df['Score'] + weight * ranking_df[metric]
     # end cleanup
 
-st.title('Rankings')
-st.write('See which states are favorable based on what\'s important to you.')
+# st.title('Rankings')
+# st.write('See which states are favorable based on what\'s important to you.')
+
+
+map_component = st.declare_component("home_map", path="components")
+overview = ranking_df[['State','Score']]
+home_map = map_component(data=overview.to_numpy().tolist())
 
 ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
 st.write(ranking_df)
 
-for metric_name, is_lower_favorable in metrics:
-    st.subheader(metric_name)
-    st.write(metrics_data[metric_name].get('data'))
+# for metric_name, is_lower_favorable in metrics:
+#     st.subheader(metric_name)
+#     st.write(metrics_data[metric_name].get('data'))
