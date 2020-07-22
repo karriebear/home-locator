@@ -1,0 +1,2 @@
+.tabs{display:flex;overflow-x:scroll}.tabs__tab{border:1px solid #e6eaf1;border-image:none;border-image:initial;background-color:#fff;padding:1px .8rem;border-right:0;white-space:nowrap}.tabs__tab:first-child{border-top-left-radius:.25rem}.tabs__tab:last-child{border-top-right-radius:.25rem;border-right:1px}.tabs__tab:focus{outline:none}.tabs__tab--active{background:#f63366;color:#fff}
+/*# sourceMappingURL=main.d5841574.chunk.css.map */
