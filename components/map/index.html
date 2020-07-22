@@ -1,0 +1,66 @@
+<html>
+  <body>
+    <div id="regions_div" style="width: 100%; height: 500px;"></div>
+
+    <!-- Things we should package up for users -->
+    <script type="text/javascript" src="./streamlit/2.6d8ff151.chunk.js"></script>
+    <script type="text/javascript" src="./streamlit/main.6db4c50c.chunk.js"></script>
+    <script type="text/javascript" src="./streamlit/runtime-main.11ec9aca.js"></script>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {
+        'packages':['geochart'],
+        'mapsApiKey': 'AIzaSyAqFvKJYNukFmJl_erO9xFg_1M0T9jbehc'
+      });
+
+      var chart;
+      var options = {
+        'region': 'US',
+        'displayMode': 'regions',
+        'resolution': 'provinces',
+      };
+      var headers = [
+        ['States', 'Score']
+      ]
+
+      google.charts.setOnLoadCallback(init);
+
+      function init() {
+        chart = new google.visualization.GeoChart(
+          document.getElementById('regions_div')
+        );
+
+        drawRegionsMap()
+
+        // Tell Streamlit we're ready to start receiving data. We won't get our
+        // first RENDER_EVENT until we call this function.
+        Streamlit.setComponentReady()
+      }
+
+      function drawRegionsMap(data = []) {
+        var data = google.visualization.arrayToDataTable(headers.concat(data));
+
+        chart.draw(data, options);
+      }
+
+       function onRender(event) {
+         // Get the RenderData from the event
+         const data = event.detail
+
+         // RenderData.args is the JSON dictionary of arguments sent from the
+         // Python script.
+         let statesData = data.args["data"]
+         drawRegionsMap(statesData)
+         Streamlit.setFrameHeight(500)
+       }
+
+       // Attach our `onRender` handler to Streamlit's render event.
+       Streamlit.events.addEventListener(Streamlit.RENDER_EVENT, onRender)
+
+       // Finally, tell Streamlit to update our intiial height. We omit the
+       // `height` parameter here to have it default to our scrollHeight.
+       Streamlit.setFrameHeight()
+    </script>
+  </body>
+</html>
