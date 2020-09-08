@@ -11,7 +11,7 @@ ranking_df = False
 def create_section_weights(metric, columns, is_favorable=True):
     sidebar = st.sidebar
     # sidebar.checkbox('Is Favorable', value=not is_favorable, key='{0}_is_favorable'.format(metric))
-    weighting_container = sidebar.collapsible_container("Weighting") if len(columns) > 1 else sidebar.container()
+    weighting_container = sidebar.collapsible_container("Factors", collapsed=True) if len(columns) > 1 else sidebar.container()
     default_value = 1/len(columns)
 
     for col in columns:
@@ -71,8 +71,9 @@ for index, metric_config in enumerate(metrics):
 st.title('Rankings')
 st.write('See which states are favorable based on what\'s important to you.')
 
+overall = st.container()
 ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
-st.write(ranking_df)
+overall.write(ranking_df)
 
 for metric_name, is_lower_favorable in metrics:
     container = st.collapsible_container(metric_name)
