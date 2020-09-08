@@ -1,73 +1,28 @@
 import streamlit as st
 import pandas as pd
 import urllib.parse
-
-# (metric_name, is_lower_favorable)
-metrics = [
-    ('Safety', False),
-    'Natural Disasters',
-    # ('Natural Disasters', False),
-    # ('Natural Disasters', True),
-    ('Weather', False),
-    'Income Tax',
-    # 'Capital Gains Tax',
-    'Sin Tax',
-    'Wireless Tax',
-    'Sales Tax',
-    'Fuel Tax',
-    'Property Tax',
-]
+from metrics import metrics
+import data
 
 metrics_data = {}
 
 ranking_df = False
 
-def strip_number(n):
-    return float(n.strip('$%'))
-
-@st.cache(allow_output_mutation=True)
-def load_data(file, sheet):
-    data = pd.read_csv(
-        'https://docs.google.com/spreadsheets/d/{0}/gviz/tq?tqx=out:csv&sheet={1}'.format(
-            file,
-            urllib.parse.quote(sheet),
-        ),
-        thousands=',',
-        converters={
-            'Tax (%)':strip_number,
-            'Tax ($)':strip_number,
-        }
-    )
-    data = data.fillna(0)
-    columns = data.columns[1:]
-    metric_data = {
-        'data': data,
-        'columns': columns,
-        'sub_weights': {},
-        'weight': 0
-    }
-    return metric_data
-
 def create_section_weights(metric, columns, is_favorable=True):
-    st.sidebar.checkbox('Is Favorable', value=not is_favorable, key='{0}_is_favorable'.format(metric))
-
-    show_category_weighting = False
-    if len(columns) > 1:
-        show_category_weighting = st.sidebar.checkbox('Show category weighting', key=metric)
+    sidebar = st.sidebar
+    # sidebar.checkbox('Is Favorable', value=not is_favorable, key='{0}_is_favorable'.format(metric))
+    weighting_container = sidebar.collapsible_container("Weighting") if len(columns) > 1 else sidebar.container()
     default_value = 1/len(columns)
 
     for col in columns:
-        if show_category_weighting:
-            metrics_data[metric]['sub_weights'][col] = st.sidebar.slider(
-                col,
-                value=metrics_data[metric]['sub_weights'][col] if col in metrics_data[metric]['sub_weights'] else default_value,
-                key='{0}_{1}'.format(metric,col),
-                min_value=0.0,
-                max_value=1.0
-            )
-        elif col in metrics_data[metric]['sub_weights']:
-            continue
-        else:
+        metrics_data[metric]['sub_weights'][col] = weighting_container.slider(
+            col,
+            value=metrics_data[metric]['sub_weights'][col] if col in metrics_data[metric]['sub_weights'] else default_value,
+            key='{0}_{1}'.format(metric,col),
+            min_value=0.0,
+            max_value=1.0
+        )
+        if col not in metrics_data[metric]['sub_weights']:
             metrics_data[metric]['sub_weights'][col] = default_value
 
 for index, metric_config in enumerate(metrics):
@@ -76,7 +31,7 @@ for index, metric_config in enumerate(metrics):
         print(metrics)
     (metric, is_lower_favorable) = metrics[index]
 
-    metric_data = load_data('1ZBhUjnMxAQW1fgQAEipzJ7jbaJ5768bGSkqyuOgHn2o', metric)
+    metric_data = data.load_data('1ZBhUjnMxAQW1fgQAEipzJ7jbaJ5768bGSkqyuOgHn2o', metric)
     metrics_data[metric] = metric_data
     columns = metric_data['columns']
 
@@ -120,5 +75,5 @@ ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
 st.write(ranking_df)
 
 for metric_name, is_lower_favorable in metrics:
-    st.subheader(metric_name)
-    st.write(metrics_data[metric_name].get('data'))
+    container = st.collapsible_container(metric_name)
+    container.write(metrics_data[metric_name].get('data'))

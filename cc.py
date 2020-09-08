@@ -23,27 +23,23 @@ metrics_data = {}
 
 ranking_df = False
 
+# def create_category():
+
+
+
 def create_section_weights(metric, columns, is_favorable=True):
     st.sidebar.checkbox('Is Favorable', value=not is_favorable, key='{0}_is_favorable'.format(metric))
-
-    show_category_weighting = False
-    if len(columns) > 1:
-        show_category_weighting = st.sidebar.checkbox('Show category weighting', key=metric)
     default_value = 1/len(columns)
 
     for col in columns:
-        if show_category_weighting:
-            metrics_data[metric]['sub_weights'][col] = st.sidebar.slider(
-                col,
-                value=metrics_data[metric]['sub_weights'][col] if col in metrics_data[metric]['sub_weights'] else default_value,
-                key='{0}_{1}'.format(metric,col),
-                min_value=0.0,
-                max_value=1.0
-            )
-        elif col in metrics_data[metric]['sub_weights']:
-            continue
-        else:
-            metrics_data[metric]['sub_weights'][col] = default_value
+        category_weighting = st.sidebar.collapsable_container(col)
+        metrics_data[metric]['sub_weights'][col] = category_weighting.slider(
+            col,
+            value=metrics_data[metric]['sub_weights'][col] if col in metrics_data[metric]['sub_weights'] else default_value,
+            key='{0}_{1}'.format(metric,col),
+            min_value=0.0,
+            max_value=1.0
+        )
 
 for index, metric_config in enumerate(metrics):
     if not isinstance(metric_config, tuple):
