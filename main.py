@@ -11,7 +11,7 @@ ranking_df = False
 def create_section_weights(metric, columns, is_favorable=True):
     sidebar = st.sidebar
     # sidebar.checkbox('Is Favorable', value=not is_favorable, key='{0}_is_favorable'.format(metric))
-    weighting_container = sidebar.expander("Factors", expanded=False) if len(columns) > 1 else sidebar.container()
+    weighting_container = sidebar.beta_expander("Factors", expanded=False) if len(columns) > 1 else sidebar.container()
     default_value = 1/len(columns)
 
     for col in columns:
@@ -76,5 +76,5 @@ ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
 overall.write(ranking_df)
 
 for metric_name, is_lower_favorable in metrics:
-    container = st.expander(metric_name, True)
+    container = st.beta_expander(metric_name, True)
     container.write(metrics_data[metric_name].get('data'))
