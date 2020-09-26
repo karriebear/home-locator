@@ -71,7 +71,7 @@ for index, metric_config in enumerate(metrics):
 st.title('Rankings')
 st.write('See which states are favorable based on what\'s important to you.')
 
-overall = st.container()
+overall = st.beta_container()
 ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
 overall.write(ranking_df)
 
