@@ -2,11 +2,14 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 from metrics import metrics
+
 import data
 
 metrics_data = {}
 
 ranking_df = False
+
+st.file_uploader("label")
 
 def create_section_weights(metric, columns, is_favorable=True):
     sidebar = st.sidebar
