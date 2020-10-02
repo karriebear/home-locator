@@ -1,3 +1,4 @@
 pandas==1.0.5
 urllib3==1.25.9
+streamlit==0.67.1
 streamlit-0.67.1-py2.py3-none-any.whl
