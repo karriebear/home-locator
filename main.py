@@ -9,8 +9,6 @@ metrics_data = {}
 
 ranking_df = False
 
-st.file_uploader("label")
-
 def create_section_weights(metric, columns, is_favorable=True):
     sidebar = st.sidebar
     # sidebar.checkbox('Is Favorable', value=not is_favorable, key='{0}_is_favorable'.format(metric))
