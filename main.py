@@ -104,7 +104,6 @@ active_tab = tab_component(key="tabs", tabs=tabs)
 
 overall = st.beta_container()
 ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
-overall.write(ranking_df)
 
 if (active_tab == "Overview"):
     ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
