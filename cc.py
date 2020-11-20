@@ -32,7 +32,7 @@ def create_section_weights(metric, columns, is_favorable=True):
     default_value = 1/len(columns)
 
     for col in columns:
-        category_weighting = st.sidebar.collapsable_container(col)
+        category_weighting = st.sidebar.beta_expander(col)
         metrics_data[metric]['sub_weights'][col] = category_weighting.slider(
             col,
             value=metrics_data[metric]['sub_weights'][col] if col in metrics_data[metric]['sub_weights'] else default_value,

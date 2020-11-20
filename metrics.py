@@ -6,7 +6,7 @@ metrics = [
     # # ('Natural Disasters', True),
     ('Weather', False),
     'Income Tax',
-    'Capital Gains Tax',
+    # 'Capital Gains Tax',
     'Sin Tax',
     'Wireless Tax',
     'Sales Tax',

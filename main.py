@@ -1,6 +1,8 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import urllib.parse
+from streamlit_google_geochart import google_geochart
 from metrics import metrics
 
 import data
@@ -9,7 +11,9 @@ metrics_data = {}
 
 ranking_df = False
 
-st.file_uploader("label")
+custom_data = st.sidebar.beta_container()
+datasource = custom_data.file_uploader("Upload data source")
+
 
 def create_section_weights(metric, columns, is_favorable=True):
     sidebar = st.sidebar
@@ -38,7 +42,9 @@ for index, metric_config in enumerate(metrics):
     metrics_data[metric] = metric_data
     columns = metric_data['columns']
 
-    st.sidebar.subheader(metric)
+    header, value = st.sidebar.beta_columns([3, 1])
+    header.subheader(metric)
+
     weight = st.sidebar.slider(
         'Weight',
         value=1/len(metrics),
@@ -46,6 +52,8 @@ for index, metric_config in enumerate(metrics):
         min_value=0.0,
         max_value=1.0
     )
+    value.write("\n")
+    value.text("{:.0%}".format(round(weight, 2)))
 
     metric_score = metric_data['data'][['State']].copy()
 
@@ -74,10 +82,34 @@ for index, metric_config in enumerate(metrics):
 st.title('Rankings')
 st.write('See which states are favorable based on what\'s important to you.')
 
+overview = ranking_df[['State','Score']]
+
+google_geochart(
+    key="map",
+    data=overview.to_records(index=False).tolist(),
+    headers=['State','Score'],
+    google_maps_api_key="AIzaSyAqFvKJYNukFmJl_erO9xFg_1M0T9jbehc",
+    options={
+        'region': 'US',
+        'displayMode': 'regions',
+        'resolution': 'provinces'
+    }
+)
+
+tab_component = components.declare_component("tabs", path="components/tabs/build")
+tabs = list(map(lambda metric: metric[0] if isinstance(metric, tuple) else metric, metrics))
+tabs.insert(0, "Overview")
+
+active_tab = tab_component(key="tabs", tabs=tabs)
+
 overall = st.beta_container()
 ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
 overall.write(ranking_df)
 
-for metric_name, is_lower_favorable in metrics:
-    container = st.beta_expander(metric_name, True)
-    container.write(metrics_data[metric_name].get('data'))
+if (active_tab == "Overview"):
+    ranking_df = ranking_df.sort_values(by=['Score'], ascending=False)
+    st.write(ranking_df)
+else:
+    for metric_name, is_lower_favorable in metrics:
+        if (metric_name == active_tab):
+            st.write(metrics_data[metric_name].get('data'))
