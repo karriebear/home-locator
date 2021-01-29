@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import urllib.parse
+from state import state
 
 def strip_number(n):
     return float(n.strip('$%'))
@@ -28,6 +29,8 @@ def load_data(file, sheet):
     }
     return metric_data
 
+def add_poi(data):
+    state.poi = data
 
 def calculate_metric_score(data, metric_score, subweights, is_lower_favorable):
     for col in subweights:
